@@ -21,7 +21,9 @@ _vercel_url = os.environ.get('VERCEL_URL', '')
 if _vercel_url and _vercel_url not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(_vercel_url)
 if not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.vercel.app']
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+if '.vercel.app' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('.vercel.app')
 
 CSRF_TRUSTED_ORIGINS = ['https://*.vercel.app']
 _extra_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
