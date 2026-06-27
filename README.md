@@ -163,6 +163,49 @@ Django serve media files อัตโนมัติเมื่อ `DEBUG=True`
 
 ---
 
+## Mock Data สำหรับนำเสนอ
+
+### เพิ่ม Mock Data
+
+```bash
+python manage.py seed_mock_data
+```
+
+สร้างข้อมูลตัวอย่างครบทุกฟีเจอร์ (idempotent — รันซ้ำได้ไม่สร้างซ้ำ):
+
+| Model | จำนวน | รายละเอียด |
+|-------|--------|------------|
+| News | 3 | ข่าวภายใน, ภายนอก, ประชาสัมพันธ์ |
+| VolunteerLink | 2 | มี deadline จริง |
+| Competition | 3 | มี deadline จริง |
+| StudyNote | 4 | ม.4–ม.6 หลายวิชา |
+| ProblemReport | 3 | ครบทุกสถานะ (pending / approved / rejected) |
+| PointActivity | 3 | 20–50 แต้ม |
+| PointSubmission | 2 | 1 approved (50 แต้ม) + 1 pending |
+
+### ลบ Mock Data
+
+```bash
+python manage.py clear_mock_data
+```
+
+ลบข้อมูล portal ทั้งหมด (News, VolunteerLink, Competition, StudyNote, ProblemReport, PointActivity, PointSubmission, UserPointProfile) พร้อมไฟล์รูปภาพ — **บัญชีผู้ใช้ไม่ถูกลบ**
+
+จะแสดง prompt ยืนยันก่อนลบ กด `y` เพื่อดำเนินการ
+
+```bash
+# ลบโดยไม่ถาม (เหมาะสำหรับ script)
+python manage.py clear_mock_data --yes
+```
+
+### Reset และ Seed ใหม่
+
+```bash
+python manage.py clear_mock_data --yes && python manage.py seed_mock_data
+```
+
+---
+
 ## การรัน Tests
 
 ```bash
