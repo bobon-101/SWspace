@@ -71,12 +71,8 @@ def problem_reports(request):
 
 # ─── Committee Dashboard ─────────────────────────────────────────────────────
 
-@login_required
+@committee_required
 def committee_dashboard(request):
-    if not request.user.is_committee():
-        messages.error(request, 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้')
-        return redirect('portal:dashboard')
-
     stats = {
         'news_count': News.objects.count(),
         'volunteer_count': VolunteerLink.objects.count(),

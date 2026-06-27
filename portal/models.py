@@ -20,6 +20,7 @@ class News(models.Model):
         max_length=20, choices=CATEGORY_CHOICES, default=CATEGORY_ANNOUNCEMENT
     )
     is_published = models.BooleanField(default=True)
+    is_archived = models.BooleanField(default=False)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -71,6 +72,7 @@ class Competition(models.Model):
     organizer = models.CharField(max_length=200, blank=True, default='')
     deadline = models.DateField(blank=True, null=True)
     is_published = models.BooleanField(default=True)
+    is_archived = models.BooleanField(default=False)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -102,7 +104,6 @@ class StudyNote(models.Model):
     title = models.CharField(max_length=200)
     grade_level = models.CharField(max_length=20, choices=GRADE_CHOICES)
     subject = models.CharField(max_length=100)
-    # TODO (Phase 3): Replace drive_url with actual Google Drive API upload integration
     drive_url = models.URLField()
     credit_name = models.CharField(max_length=150, blank=True, default='')
     is_anonymous = models.BooleanField(default=False)
@@ -215,6 +216,7 @@ class PointSubmission(models.Model):
         verbose_name='สถานะ',
     )
     admin_note = models.TextField(blank=True, default='', verbose_name='หมายเหตุ')
+    is_archived = models.BooleanField(default=False)
     approved_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

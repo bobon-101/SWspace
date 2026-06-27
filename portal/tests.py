@@ -267,3 +267,70 @@ class PointsTest(TestCase):
         sub.refresh_from_db()
         self.assertEqual(sub.status, PointSubmission.STATUS_REJECTED)
         self.assertEqual(sub.admin_note, 'ไม่ครบ')
+
+    def test_rejected_submission_allows_resubmit(self):
+        from portal.models import PointSubmission
+        sub = self._submit()
+        sub.status = PointSubmission.STATUS_REJECTED
+        sub.save()
+        resp = self.s_client.post(
+            reverse('portal:point_submit'),
+            {
+                'activity': self.activity.pk,
+                'proof_image': _make_uploaded_file(),
+            },
+        )
+        self.assertRedirects(resp, reverse('portal:points'))
+        self.assertEqual(
+            PointSubmission.objects.filter(
+                submitted_by=self.student, activity=self.activity
+            ).count(),
+            2,
+        )
+
+
+class ImageValidationTest(TestCase):
+    """Server-side image validation on committee upload forms."""
+
+    def setUp(self):
+        self.committee = User.objects.create_user(
+            email='committee@satriwit.ac.th',
+            password='Test123!',
+            full_name='คณะกรรมการ',
+            role='committee',
+        )
+        self.c_client = Client()
+        self.c_client.login(username='committee@satriwit.ac.th', password='Test123!')
+
+    def test_news_rejects_wrong_content_type(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        bad = SimpleUploadedFile('evil.exe', b'\x4d\x5a\x00', content_type='application/octet-stream')
+        resp = self.c_client.post(
+            reverse('portal:committee_news_create'),
+            {
+                'title': 'ข่าวทดสอบ',
+                'description': 'รายละเอียด',
+                'category': 'internal',
+                'is_published': True,
+                'image': bad,
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        from portal.models import News
+        self.assertFalse(News.objects.filter(title='ข่าวทดสอบ').exists())
+
+    def test_competition_rejects_oversized_image(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        big = SimpleUploadedFile('big.jpg', b'x' * (5 * 1024 * 1024 + 1), content_type='image/jpeg')
+        resp = self.c_client.post(
+            reverse('portal:committee_competition_create'),
+            {
+                'title': 'แข่งขันทดสอบ',
+                'description': 'รายละเอียด',
+                'is_published': True,
+                'image': big,
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        from portal.models import Competition
+        self.assertFalse(Competition.objects.filter(title='แข่งขันทดสอบ').exists())

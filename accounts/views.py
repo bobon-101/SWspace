@@ -2,6 +2,7 @@ from django.contrib import auth, messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .forms import RegisterForm
 
@@ -40,8 +41,14 @@ def login_view(request):
         user = form.get_user()
         auth.login(request, user)
         messages.success(request, f'เข้าสู่ระบบสำเร็จ ยินดีต้อนรับ {user.full_name}')
-        next_url = request.GET.get('next', 'portal:dashboard')
-        return redirect(next_url)
+        next_url = request.GET.get('next', '')
+        if next_url and url_has_allowed_host_and_scheme(
+            next_url,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
+        ):
+            return redirect(next_url)
+        return redirect('portal:dashboard')
     elif request.method == 'POST':
         messages.error(request, 'อีเมลหรือรหัสผ่านไม่ถูกต้อง')
 

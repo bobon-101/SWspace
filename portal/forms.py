@@ -2,6 +2,18 @@ from django import forms
 
 from .models import Competition, News, PointActivity, PointSubmission, ProblemReport, StudyNote, VolunteerLink
 
+_ALLOWED_IMAGE_TYPES = {'image/jpeg', 'image/png', 'image/webp'}
+_MAX_IMAGE_BYTES = 5 * 1024 * 1024
+
+
+def validate_image_file(f):
+    if f and hasattr(f, 'content_type'):
+        if f.content_type not in _ALLOWED_IMAGE_TYPES:
+            raise forms.ValidationError('รองรับเฉพาะ JPG, PNG, WEBP เท่านั้น')
+        if f.size > _MAX_IMAGE_BYTES:
+            raise forms.ValidationError('ไฟล์ใหญ่เกิน 5 MB กรุณาบีบอัดรูปก่อนอัปโหลด')
+    return f
+
 
 class NewsForm(forms.ModelForm):
     class Meta:
@@ -21,6 +33,9 @@ class NewsForm(forms.ModelForm):
             'image': 'รูปภาพประกอบ',
             'is_published': 'เผยแพร่ทันที',
         }
+
+    def clean_image(self):
+        return validate_image_file(self.cleaned_data.get('image'))
 
 
 class VolunteerLinkForm(forms.ModelForm):
@@ -76,6 +91,9 @@ class CompetitionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['deadline'].input_formats = ['%Y-%m-%d']
+
+    def clean_image(self):
+        return validate_image_file(self.cleaned_data.get('image'))
 
 
 class StudyNoteForm(forms.ModelForm):
@@ -191,14 +209,7 @@ class PointSubmissionForm(forms.ModelForm):
         return cleaned_data
 
     def clean_proof_image(self):
-        f = self.cleaned_data.get('proof_image')
-        if f:
-            allowed_types = {'image/jpeg', 'image/png', 'image/webp'}
-            if hasattr(f, 'content_type') and f.content_type not in allowed_types:
-                raise forms.ValidationError('รองรับเฉพาะ JPG, PNG, WEBP เท่านั้น')
-            if f.size > 5 * 1024 * 1024:
-                raise forms.ValidationError('ไฟล์ใหญ่เกิน 5 MB กรุณาบีบอัดรูปก่อนอัปโหลด')
-        return f
+        return validate_image_file(self.cleaned_data.get('proof_image'))
 
 
 class PointRejectForm(forms.Form):
