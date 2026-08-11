@@ -5,10 +5,10 @@
 ## ภาพรวม Workflow
 
 ```
-แก้โค้ด (local) → test → commit → push → pull บน PA → reload
+แก้โค้ด (local) → บอก Claude "อัปเดตโค้ดขึ้น GitHub" → รัน 1 คำสั่งบน PA → Reload
 ```
 
-ทุกอย่างวนซ้ำขั้นตอนนี้ทุกครั้งที่อัพเดต
+ทุกอย่างวนซ้ำขั้นตอนนี้ทุกครั้งที่อัพเดต — รายละเอียดดู **ส่วน B**
 
 ---
 
@@ -45,7 +45,7 @@ COMMITTEE_VERIFICATION_CODE=<รหัสที่ต้องการ>
 
 | ส่วน | ค่า |
 |------|-----|
-| WSGI file | ดู Section C ด้านล่าง |
+| WSGI file | ดูเนื้อหาด้านล่าง |
 | Virtualenv | `/home/<username>/.virtualenvs/swspace` |
 | Static URL `/static/` | `/home/<username>/swspace/staticfiles` |
 | Static URL `/media/` | `/home/<username>/swspace/media` |
@@ -70,82 +70,40 @@ application = get_wsgi_application()
 
 ---
 
-## ส่วน B: อัพเดตโค้ด (ทำทุกครั้งที่แก้ไข)
+## ส่วน B: อัพเดตโค้ด (ทำทุกครั้งที่แก้ไข) — ทำแค่ 2 ขั้นตอน
 
-### 1. แก้โค้ดและทดสอบบน machine ของคุณ
+### ขั้นตอนที่ 1 — บอก Claude Code
 
-```bash
-python manage.py test
-```
+พิมพ์สั้นๆ ว่า:
 
-ต้องผ่านทุก test ก่อน push
+> อัปเดตโค้ดขึ้น GitHub ให้หน่อย
 
-### 2. Commit และ Push ขึ้น GitHub
+Claude จะรัน test → commit → push ให้อัตโนมัติ (ถ้า test ไม่ผ่าน จะหยุดแจ้งก่อน ไม่ push ของเสียขึ้นไป)
 
-```bash
-git add <ชื่อไฟล์ที่แก้>
-git commit -m "อธิบายสิ่งที่แก้ไข"
-git push
-```
+### ขั้นตอนที่ 2 — วางคำสั่งนี้ใน PythonAnywhere
 
-### 3. Pull และ Reload บน PythonAnywhere
-
-เปิด **PythonAnywhere Dashboard** → **Consoles** → **Bash** (เปิดใหม่ได้เสมอ)
+เปิด **PythonAnywhere Dashboard** → **Consoles** → **Bash** (เปิดใหม่ได้เสมอ) แล้ววาง:
 
 ```bash
-cd ~/swspace
-git pull
+workon swspace && cd ~/swspace && git pull && python manage.py migrate && python manage.py collectstatic --noinput
 ```
 
-จากนั้น **ดูตารางด้านล่าง** ว่าต้องรันคำสั่งเพิ่มหรือไม่:
+### ขั้นตอนที่ 3 — กด Reload
 
-| การเปลี่ยนแปลงที่แก้ไข | คำสั่งเพิ่มเติม |
+ไปแท็บ **Web** → กดปุ่ม **Reload** สีเขียว — เสร็จ
+
+> คำสั่งเดียวด้านบนรัน `migrate` และ `collectstatic` ทุกครั้งไปเลยแม้บางครั้งไม่จำเป็น (ไม่มีผลเสีย แค่เผื่อไว้ไม่ต้องมานั่งคิดว่ารอบนี้ต้องรันอะไรบ้าง) ถ้าอยากคุมละเอียดว่ารอบนี้จำเป็นต้องรันคำสั่งไหน ดูตารางนี้:
+
+| การเปลี่ยนแปลงที่แก้ไข | คำสั่งที่จำเป็นจริงๆ |
 |------------------------|----------------|
-| แก้ Python, template, view, form | ไม่ต้องรันอะไรเพิ่ม |
-| เพิ่ม/แก้ไข model (มี migration ใหม่) | `python manage.py migrate` |
-| แก้ CSS, JS, รูปใน `static/` | `python manage.py collectstatic --noinput` |
-| แก้ทั้ง model และ static | รันทั้งสองคำสั่ง |
-| แก้ `.env` (ค่า config) | แก้ไฟล์ `~/swspace/.env` ด้วย `nano` |
-
-สุดท้าย: กลับไปที่ **Web** tab → กดปุ่ม **Reload** สีเขียว
+| แก้ Python, template, view, form | `workon swspace && cd ~/swspace && git pull` (ไม่ต้องรันอะไรเพิ่ม) |
+| เพิ่ม/แก้ไข model (มี migration ใหม่) | เพิ่ม `python manage.py migrate` |
+| แก้ CSS, JS, รูปใน `static/` | เพิ่ม `python manage.py collectstatic --noinput` |
+| แก้ `.env` (ค่า config) | แก้ไฟล์ `~/swspace/.env` ด้วย `nano` แทน (ดูส่วน C) |
 
 ---
 
-## ส่วน C: Script อัตโนมัติ (ทางเลือก)
-
-สร้าง script บน PythonAnywhere เพื่อรวมทุกคำสั่งไว้ในที่เดียว
-
-```bash
-# สร้างไฟล์ script (ทำครั้งเดียว)
-cat > ~/update.sh << 'EOF'
-#!/bin/bash
-set -e
-cd ~/swspace
-echo ">>> git pull"
-git pull
-echo ">>> migrate"
-python manage.py migrate
-echo ">>> collectstatic"
-python manage.py collectstatic --noinput
-echo ">>> done — go reload in Web tab"
-EOF
-
-chmod +x ~/update.sh
-```
-
-หลังจากนั้น ทุกครั้งที่อัพเดตใช้แค่:
-
-```bash
-workon swspace && ~/update.sh
-```
-
-แล้วกด **Reload** ใน Web tab
-
-> `workon swspace` เปิดใช้ virtualenv ก่อนรัน script
-
----
-
-## ส่วน D: แก้ไขไฟล์ .env บน server
+## ส่วน C: แก้ไขไฟล์ .env บน server
 
 `.env` บน PythonAnywhere **ไม่ได้มาจาก git** — ต้องแก้บน server โดยตรง
 
@@ -162,7 +120,7 @@ nano ~/swspace/.env
 
 ---
 
-## ส่วน E: ตรวจสอบ Error
+## ส่วน D: ตรวจสอบ Error
 
 ถ้าหน้าเว็บพัง หลัง reload:
 
@@ -177,12 +135,14 @@ tail -n 50 /var/log/<username>.pythonanywhere.com.error.log
 
 ## สรุปคำสั่งที่ใช้บ่อย
 
+**อัปเดตโค้ด (ใช้บ่อยที่สุด — ก็อปวางบน PA ได้เลย):**
+
+```bash
+workon swspace && cd ~/swspace && git pull && python manage.py migrate && python manage.py collectstatic --noinput
+```
+
 | งาน | คำสั่ง |
 |-----|--------|
-| ดึงโค้ดใหม่ | `cd ~/swspace && git pull` |
-| รัน migration | `python manage.py migrate` |
-| Collect static | `python manage.py collectstatic --noinput` |
 | ดู error log | `tail -50 /var/log/<username>.pythonanywhere.com.error.log` |
-| เปิด virtualenv | `workon swspace` |
 | รัน test (local) | `python manage.py test` |
 | แก้ .env | `nano ~/swspace/.env` |
