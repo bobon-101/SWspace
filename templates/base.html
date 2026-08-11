@@ -36,22 +36,22 @@
         {% if user.is_authenticated %}
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'portal:dashboard' %}">หน้าหลัก</a>
+              <a class="nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}" href="{% url 'portal:dashboard' %}">หน้าหลัก</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'portal:news' %}">ข่าวสาร</a>
+              <a class="nav-link{% if request.resolver_match.url_name == 'news' %} active{% endif %}" href="{% url 'portal:news' %}">ข่าวสาร</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'portal:volunteer' %}">จิตอาสา</a>
+              <a class="nav-link{% if request.resolver_match.url_name == 'volunteer' %} active{% endif %}" href="{% url 'portal:volunteer' %}">จิตอาสา</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'portal:competitions' %}">การแข่งขัน</a>
+              <a class="nav-link{% if request.resolver_match.url_name == 'competitions' %} active{% endif %}" href="{% url 'portal:competitions' %}">การแข่งขัน</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'portal:study_notes' %}">แชร์สรุป</a>
+              <a class="nav-link{% if request.resolver_match.url_name == 'study_notes' %} active{% endif %}" href="{% url 'portal:study_notes' %}">แชร์สรุป</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'portal:problem_reports' %}">แจ้งปัญหา</a>
+              <a class="nav-link{% if request.resolver_match.url_name == 'problem_reports' %} active{% endif %}" href="{% url 'portal:problem_reports' %}">แจ้งปัญหา</a>
             </li>
             {% if user.is_committee %}
               <li class="nav-item">
@@ -116,6 +116,7 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'js/search.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -6,33 +6,49 @@
 <div class="page-header">
   <div class="container">
     <a href="{% url 'portal:dashboard' %}" class="text-white-50 small text-decoration-none">&#8592; หน้าหลัก</a>
-    <h3 class="fw-bold mb-0 mt-2">&#129309; จิตอาสา</h3>
+    <h3 class="fw-bold mb-0 mt-2"><span class="page-header-icon">&#129309;</span>จิตอาสา</h3>
     <p class="mb-0 opacity-75">กิจกรรมจิตอาสาและบำเพ็ญประโยชน์</p>
   </div>
 </div>
 
 <div class="container pb-5">
   {% if items %}
-    <div class="row row-cols-1 row-cols-md-2 g-4">
+    <div class="sw-search-box mb-4">
+      <input type="text" class="form-control sw-search-input"
+             data-search-target="volunteerGrid" data-search-empty="volunteerNoResults"
+             placeholder="&#128269; ค้นหากิจกรรมจิตอาสา...">
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 g-4" id="volunteerGrid">
       {% for item in items %}
-        <div class="col">
+        <div class="col" data-search-text="{{ item.title }} {{ item.description }} {{ item.organizer }}">
           <div class="card feature-card p-4 h-100 d-flex flex-column">
-            <h6 class="fw-bold">{{ item.title }}</h6>
-            {% if item.organizer %}
-              <p class="text-muted small mb-1">&#127970; {{ item.organizer }}</p>
-            {% endif %}
+            <div class="d-flex align-items-start gap-3 mb-2">
+              <span class="sw-card-round-icon">&#129309;</span>
+              <div>
+                <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+                {% if item.organizer %}
+                  <p class="text-muted small mb-0">&#127970; {{ item.organizer }}</p>
+                {% endif %}
+              </div>
+            </div>
             {% if item.deadline %}
               <p class="small mb-2">
-                <span class="badge bg-warning text-dark">ปิดรับ {{ item.deadline|date:"d M Y" }}</span>
+                <span class="badge rounded-pill bg-warning text-dark">ปิดรับ {{ item.deadline|date:"d M Y" }}</span>
               </p>
             {% endif %}
             <p class="text-muted small flex-grow-1">{{ item.description }}</p>
             <a href="{{ item.external_url }}" target="_blank" rel="noopener noreferrer"
-               class="btn btn-sw-primary btn-sm mt-auto">เปิดลิงก์จิตอาสา &#8599;</a>
-            <p class="text-muted small mt-2 mb-0">{{ item.created_at|date:"d M Y" }}</p>
+               class="btn btn-sw-primary w-100 mt-auto">เปิดลิงก์จิตอาสา &#8599;</a>
+            <p class="text-muted small mt-2 mb-0">&#128197; {{ item.created_at|date:"d M Y" }}</p>
           </div>
         </div>
       {% endfor %}
+    </div>
+
+    <div id="volunteerNoResults" class="empty-state d-none">
+      <div class="empty-icon">&#128269;</div>
+      <h5 class="text-muted">ไม่พบรายการที่ต้องการค้นหา</h5>
     </div>
   {% else %}
     <div class="empty-state">

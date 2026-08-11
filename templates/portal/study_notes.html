@@ -6,7 +6,7 @@
 <div class="page-header">
   <div class="container">
     <a href="{% url 'portal:dashboard' %}" class="text-white-50 small text-decoration-none">&#8592; หน้าหลัก</a>
-    <h3 class="fw-bold mb-0 mt-2">&#128218; แชร์สรุป</h3>
+    <h3 class="fw-bold mb-0 mt-2"><span class="page-header-icon">&#128218;</span>แชร์สรุป</h3>
     <p class="mb-0 opacity-75">สรุปการเรียนจากเพื่อนๆ แยกตามชั้นและวิชา</p>
   </div>
 </div>
@@ -19,31 +19,66 @@
   </div>
 
   {% if items %}
+    <div class="sw-filter-bar mb-4">
+      <select class="form-select sw-filter-select" id="snGradeFilter">
+        <option value="">ทุกระดับชั้น</option>
+        <option value="ม.1">ม.1</option>
+        <option value="ม.2">ม.2</option>
+        <option value="ม.3">ม.3</option>
+        <option value="ม.4">ม.4</option>
+        <option value="ม.5">ม.5</option>
+        <option value="ม.6">ม.6</option>
+      </select>
+      <select class="form-select sw-filter-select" id="snSubjectFilter">
+        <option value="">ทุกวิชา</option>
+        <option value="ภาษาไทย">ภาษาไทย</option>
+        <option value="สังคมศึกษา">สังคมศึกษา</option>
+        <option value="คณิตศาสตร์เพิ่มเติม">คณิตศาสตร์เพิ่มเติม</option>
+        <option value="คณิตศาสตร์พื้นฐาน">คณิตศาสตร์พื้นฐาน</option>
+        <option value="ทฤษฎีจำนวน">ทฤษฎีจำนวน</option>
+        <option value="ภาษาอังกฤษพื้นฐาน">ภาษาอังกฤษพื้นฐาน</option>
+        <option value="ภาษาอังกฤษอ่านเขียน">ภาษาอังกฤษอ่านเขียน</option>
+        <option value="ฟิสิกส์">ฟิสิกส์</option>
+        <option value="เคมี">เคมี</option>
+        <option value="ชีววิทยา">ชีววิทยา</option>
+        <option value="วิทยาศาสตร์พื้นฐาน">วิทยาศาสตร์พื้นฐาน</option>
+      </select>
+    </div>
+
     {% regroup items by grade_level as grade_groups %}
-    {% for grade in grade_groups %}
-      <h5 class="fw-bold mt-4 mb-3" style="color: var(--sw-red)">
-        &#128218; {{ grade.grouper }}
-      </h5>
-      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 mb-2">
-        {% for item in grade.list %}
-          <div class="col">
-            <div class="card feature-card p-3 h-100 d-flex flex-column">
-              <div class="d-flex gap-2 mb-2 flex-wrap">
-                <span class="badge bg-danger">{{ item.grade_level }}</span>
-                <span class="badge bg-secondary">{{ item.subject }}</span>
+    <div id="studyNotesGroups">
+      {% for grade in grade_groups %}
+        <div class="sn-grade-group" data-grade="{{ grade.grouper }}">
+          <h5 class="fw-bold mt-4 mb-3" style="color: var(--sw-red)">
+            &#128218; {{ grade.grouper }}
+          </h5>
+          <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 mb-2">
+            {% for item in grade.list %}
+              <div class="col sn-card" data-subject="{{ item.subject }}">
+                <div class="card feature-card p-3 h-100 d-flex flex-column">
+                  <div class="d-flex gap-2 mb-2 flex-wrap">
+                    <span class="badge rounded-pill bg-danger">{{ item.grade_level }}</span>
+                    <span class="badge rounded-pill bg-secondary">{{ item.subject }}</span>
+                  </div>
+                  <h6 class="fw-bold">{{ item.title }}</h6>
+                  <p class="text-muted small mb-2">
+                    &#128100; {{ item.display_credit }}
+                  </p>
+                  <a href="{{ item.drive_url }}" target="_blank" rel="noopener noreferrer"
+                     class="btn btn-sw-primary w-100 mt-auto">ดูสรุป &#8599;</a>
+                  <p class="text-muted small mt-2 mb-0">&#128197; {{ item.created_at|date:"d M Y" }}</p>
+                </div>
               </div>
-              <h6 class="fw-bold">{{ item.title }}</h6>
-              <p class="text-muted small mb-2">
-                &#128100; {{ item.display_credit }}
-              </p>
-              <a href="{{ item.drive_url }}" target="_blank" rel="noopener noreferrer"
-                 class="btn btn-sw-primary btn-sm mt-auto">ดูสรุป &#8599;</a>
-              <p class="text-muted small mt-2 mb-0">{{ item.created_at|date:"d M Y" }}</p>
-            </div>
+            {% endfor %}
           </div>
-        {% endfor %}
-      </div>
-    {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div id="studyNotesNoResults" class="empty-state d-none">
+      <div class="empty-icon">&#128269;</div>
+      <h5 class="text-muted">ไม่พบรายการที่ต้องการค้นหา</h5>
+    </div>
   {% else %}
     <div class="empty-state">
       <div class="empty-icon">&#128218;</div>
@@ -52,4 +87,43 @@
     </div>
   {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var gradeSel = document.getElementById('snGradeFilter');
+  var subjectSel = document.getElementById('snSubjectFilter');
+  var noResults = document.getElementById('studyNotesNoResults');
+  if (!gradeSel || !subjectSel) return;
+
+  function applyFilters() {
+    var grade = gradeSel.value;
+    var subject = subjectSel.value;
+    var visibleGroups = 0;
+
+    document.querySelectorAll('.sn-grade-group').forEach(function (group) {
+      if (grade && grade !== group.dataset.grade) {
+        group.style.display = 'none';
+        return;
+      }
+
+      var groupHasMatch = false;
+      group.querySelectorAll('.sn-card').forEach(function (card) {
+        var match = !subject || card.dataset.subject === subject;
+        card.style.display = match ? '' : 'none';
+        if (match) groupHasMatch = true;
+      });
+
+      group.style.display = groupHasMatch ? '' : 'none';
+      if (groupHasMatch) visibleGroups++;
+    });
+
+    noResults.classList.toggle('d-none', visibleGroups !== 0);
+  }
+
+  gradeSel.addEventListener('change', applyFilters);
+  subjectSel.addEventListener('change', applyFilters);
+})();
+</script>
 {% endblock %}

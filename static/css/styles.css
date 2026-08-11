@@ -29,12 +29,30 @@
 }
 
 /* ---- Base ---- */
+html {
+  height: 100%;
+}
+
+/* Sticky footer: on short pages the footer sits at the bottom of the
+   viewport instead of floating right under the content; on long pages it's
+   pushed down normally and scrolls with the page. */
 body {
   font-family: var(--font-body);
   background-color: var(--sw-bg);
   color: var(--sw-text);
   font-size: 0.9375rem;
   line-height: 1.65;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+body > main {
+  flex: 1 0 auto;
+}
+
+body > .sw-footer {
+  flex-shrink: 0;
 }
 
 h1, h2, h3, h4, h5, h6,
@@ -127,6 +145,11 @@ h1, h2, h3, h4, h5, h6,
   background: rgba(255, 255, 255, 0.15);
 }
 
+.sw-navbar .nav-link.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.22);
+}
+
 .sw-navbar .navbar-toggler {
   border-color: rgba(255, 255, 255, 0.5);
 }
@@ -136,17 +159,43 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* ---- Page Header ---- */
+/* Same painted night sky as the home hero (moon, stars, watercolour clouds),
+   cropped to a wide banner strip. Tint kept light so the true sky colours show
+   through — legibility comes from the text-shadow below, not from darkening. */
 .page-header {
-  background: linear-gradient(135deg, var(--sw-red) 0%, var(--sw-red-dark) 100%);
+  background-image:
+    linear-gradient(100deg, rgba(175, 41, 30, 0.22) 0%, rgba(142, 32, 24, 0.28) 100%),
+    url('../img/header-sky.jpg');
+  background-size: cover, cover;
+  background-position: center, center 70%;
+  background-repeat: no-repeat, no-repeat;
   color: #fff;
-  padding: 1.75rem 0;
+  padding: 2.1rem 0 2.4rem;
   margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-header .container {
+  position: relative;
+  z-index: 1;
 }
 
 .page-header h2,
 .page-header h3,
 .page-header h4 {
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  text-shadow: 0 1px 3px rgba(60, 10, 8, 0.55), 0 2px 10px rgba(60, 10, 8, 0.3);
+}
+
+.page-header a.text-white-50 {
+  text-shadow: 0 1px 3px rgba(60, 10, 8, 0.55);
+}
+
+.page-header-icon {
+  display: inline-block;
+  font-size: 2.1rem;
+  vertical-align: -7px;
+  margin-right: 4px;
 }
 
 /* ---- Feature / Content Cards ---- */
@@ -156,7 +205,7 @@ h1, h2, h3, h4, h5, h6,
   border-radius: var(--sw-radius);
   box-shadow: var(--sw-shadow);
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-top-color 0.18s ease;
-  background: #fff;
+  background: #FEF8F3;
   height: 100%;
 }
 
@@ -169,6 +218,79 @@ h1, h2, h3, h4, h5, h6,
 .feature-card .card-icon {
   font-size: 2.4rem;
   margin-bottom: 0.5rem;
+}
+
+/* Decorative icon strip used at the top of list cards (news, etc.) when
+   there's no uploaded image — same painted sky/cloud crop as the page header. */
+.sw-card-icon-strip {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: url('../img/card-sky.jpg') center 30% / cover no-repeat;
+}
+
+.sw-card-icon-strip__emoji {
+  position: relative;
+  z-index: 1;
+  font-size: 1.6rem;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(175, 41, 30, 0.18);
+}
+
+/* Plain centered icon with sparkle accents, no background box (competitions) */
+.sw-card-trophy-strip {
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.sw-card-trophy-strip__emoji {
+  font-size: 2.4rem;
+  position: relative;
+  z-index: 1;
+}
+
+.sw-card-trophy-strip::before,
+.sw-card-trophy-strip::after {
+  content: '\2728';
+  position: absolute;
+  font-size: 0.9rem;
+  color: var(--gold);
+  opacity: 0.85;
+}
+
+.sw-card-trophy-strip::before {
+  top: 16px;
+  left: 37%;
+}
+
+.sw-card-trophy-strip::after {
+  bottom: 12px;
+  right: 35%;
+}
+
+/* Small round icon badge beside a card title (volunteer, etc.) */
+.sw-card-round-icon {
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--sw-red-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
 }
 
 /* ---- Buttons ---- */
@@ -202,6 +324,36 @@ h1, h2, h3, h4, h5, h6,
 .form-check-input:checked {
   background-color: var(--sw-red);
   border-color: var(--sw-red);
+}
+
+/* ---- Live search box (news/volunteer/competitions) ---- */
+.sw-search-input {
+  border-radius: 999px;
+  border: 1px solid var(--sw-border);
+  padding: 0.65rem 1.25rem;
+  background: #fff;
+}
+
+/* ---- Filter bar (study notes: grade + subject dropdowns) ---- */
+.sw-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.sw-filter-select {
+  flex: 1 1 220px;
+  max-width: 280px;
+  border-radius: 999px;
+  border: 1px solid var(--sw-border);
+  padding: 0.6rem 1.15rem;
+  background-color: #fff;
+}
+
+@media (max-width: 575.98px) {
+  .sw-filter-select {
+    max-width: none;
+  }
 }
 
 /* ---- Alerts ---- */
@@ -344,12 +496,17 @@ h1, h2, h3, h4, h5, h6,
 
 /* ---- Hero ---- */
 .sw-hero {
-  height: 513px;
-  background-image: url('../img/hero-street.jpg');
+  height: 640px;
+  /* Taller box so the bottom-anchored crop pulls back and shows some sky
+     above the building instead of just the building filling the frame.
+     Desktop/tablet gets the wider PC crop; mobile switches back to the
+     taller street scene below 768px so the building isn't over-cropped. */
+  background-image: url('../img/hero-street_PC.jpg');
   background-size: cover;
-  /* The artwork is taller than the hero box; anchoring the top keeps the sky
-     clear for the heading instead of pushing the rooftop sign up into it. */
-  background-position: center top;
+  /* On wide screens the hero box is far wider than the photo, so cover scales
+     by width and crops most of the height. Anchoring to the bottom keeps the
+     building in frame instead of showing empty sky. */
+  background-position: center bottom;
   background-repeat: no-repeat;
   text-align: center;
   position: relative;
@@ -644,6 +801,8 @@ h1, h2, h3, h4, h5, h6,
 
   .sw-hero {
     height: 420px;
+    background-image: url('../img/hero-street.jpg');
+    background-position: center top;
   }
 
   /* Narrow viewports fit the whole painting vertically, so the building rises
@@ -715,5 +874,184 @@ h1, h2, h3, h4, h5, h6,
 
   .feature-card .card-icon {
     font-size: 2rem;
+  }
+}
+
+/* ==========================================================================
+   Committee dashboard — reuses .sw-hero/.sw-section-title/.sw-btn-card from
+   the home page redesign; everything below is scoped to committee.html only.
+   ========================================================================== */
+
+/* ---- Hero: left-aligned breadcrumb + title instead of the centered logo ---- */
+.sw-hero--committee {
+  text-align: left;
+  padding: 0;
+}
+
+.sw-hero-content {
+  padding-top: 56px;
+}
+
+.sw-hero-crumb {
+  display: inline-block;
+  color: #9a4c42;
+  font-size: 13px;
+  text-decoration: none;
+  margin-bottom: 14px;
+}
+
+.sw-hero-crumb:hover {
+  color: #6d241d;
+}
+
+.sw-hero-title--committee {
+  text-align: left;
+  margin-top: 0;
+}
+
+.sw-hero--committee .sw-hero-sub {
+  text-align: left;
+  max-width: 560px;
+}
+
+/* ---- Stat cards ---- */
+.sw-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.sw-stat-card {
+  background: #FEF8F3;
+  border: 1px solid rgba(175, 41, 30, 0.15);
+  border-radius: 14px;
+  box-shadow: 0 2px 9px rgba(175, 41, 30, 0.055);
+  padding: 20px 12px;
+  text-align: center;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.sw-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(175, 41, 30, 0.13);
+}
+
+.sw-stat-card__icon {
+  font-size: 1.8rem;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.sw-stat-card__value {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  line-height: 1;
+  color: var(--sw-red);
+}
+
+.sw-stat-card__label {
+  font-size: 0.8125rem;
+  color: var(--sw-muted);
+  margin-top: 6px;
+}
+
+/* ---- Feature / shortcut cards ---- */
+.sw-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 19px;
+  margin-bottom: 8px;
+}
+
+.sw-feature-card {
+  display: flex;
+  flex-direction: column;
+  background: #FEF8F3;
+  border: 1px solid rgba(175, 41, 30, 0.15);
+  border-radius: 14px;
+  box-shadow: 0 2px 9px rgba(175, 41, 30, 0.055);
+  padding: 22px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.sw-feature-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(175, 41, 30, 0.13);
+}
+
+.sw-feature-card--admin {
+  background: var(--sw-red-light);
+}
+
+.sw-feature-card__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.sw-feature-card__icon {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.sw-feature-card__title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: #A8241C;
+  margin: 0;
+}
+
+.sw-feature-card__desc {
+  font-size: 13px;
+  color: #8a5a55;
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+.sw-feature-card__badge {
+  display: inline-block;
+  align-self: flex-start;
+  background: var(--gold-light);
+  color: #6d3c14;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.sw-feature-card .sw-btn-card {
+  margin-top: auto;
+}
+
+@media (max-width: 999.98px) {
+  .sw-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sw-feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767.98px) {
+  .sw-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .sw-feature-grid {
+    grid-template-columns: 1fr;
   }
 }
